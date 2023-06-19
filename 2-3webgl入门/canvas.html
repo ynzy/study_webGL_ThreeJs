@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2-3webgl 入门 - 给画布换个颜色</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400"> 此浏览器不支持canvas </canvas>
+  </body>
+</html>
+
+<script>
+  const ctx = document.getElementById("canvas");
+  const c = ctx.getContext("2d");
+
+  c.fillStyle = "red";
+  // 绘制矩形
+  c.fillRect(10, 10, 100, 100);
+</script>
