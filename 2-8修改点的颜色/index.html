@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      canvas{
+        /*margin: 50px auto 0;*/
+        display: block;
+        background: yellow;
+      }
+      body::after {
+        content: "";
+        display: block;
+        width: 1px;
+        height: 400px;
+        background: red;
+        position: absolute;
+        top: 0;
+        left: 200px;
+      }
+      body::before {
+        content: "";
+        display: block;
+        width: 400px;
+        height: 1px;
+        background: black;
+        position: absolute;
+        top: 200px;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400"> 此浏览器不支持canvas </canvas>
+    <script type="module">
+      import { initShader } from "../lib";
+
+      const ctx = document.getElementById("canvas");
+      const gl = ctx.getContext("webgl");
+
+      // 着色器
+      // 顶点着色器
+      const VERTEX_SHADER_SOURCE = `
+        // 只传递顶点数据
+        attribute vec4 aPosition;
+        // 必须存在 main 函数
+        void main() {
+          // 要绘制的点的坐标 x,y,z,w齐次坐标(x/w,y/w,z/w)
+          gl_Position = aPosition;  // 默认值为 vec4(0.0,0.0,0.0,1.0)
+          // 点的大小
+          gl_PointSize = 20.0;
+        }
+      `;
+      // 片元着色器
+      const FRAGMENT_SHADER_SOURCE = `
+        // 片元着色器中没有默认精度，需要指定精度
+        precision mediump float;
+        uniform vec2 uColor;
+        void main() {
+          gl_FragColor = vec4(uColor.r, uColor.g, 0.0,1.0); // vec4
+        }
+      `;
+
+      const program = initShader(
+        gl,
+        VERTEX_SHADER_SOURCE,
+        FRAGMENT_SHADER_SOURCE
+      );
+      const aPosition = gl.getAttribLocation(program,'aPosition')
+
+      const uColor = gl.getUniformLocation(program,'uColor')
+
+      // gl.vertexAttrib1f(aPosition,0.0)
+      // gl.drawArrays(gl.POINTS, 0, 1); // 点
+
+      let points = []
+      ctx.onclick = function (ev) {
+        // 鼠标在浏览器点击的位置
+        const x = ev.pageX
+        const y = ev.pageY
+        // console.log(x,y)
+        // 获取元素在浏览器中的位置信息
+        const domPosition = ev.target.getBoundingClientRect()
+        // console.log(domPosition.left,domPosition.top)
+        // 当前鼠标点击在画布上的位置
+        const domx = x - domPosition.left
+        const domy = y - domPosition.top
+        // console.log(domx,domy)
+
+        /*
+         屏幕点击坐标转化为webgl坐标
+        * 水平区间
+         0 200 400
+
+         -1 0 1
+
+         -200 0 200
+
+         -1 0 1
+
+         需要先 -200 （当前画布的宽度） 然后再 除以 200
+
+        * 垂直区间
+         1 0 -1
+
+         0 200 400
+
+         200 0 -200 / 200
+
+         需要先让 200 减这个数，然后再 / 200
+         * */
+        const halfWidth = ctx.offsetWidth / 2
+        const halfHeight = ctx.offsetHeight / 2
+        const clickX = (domx - halfWidth) / halfWidth
+        const clickY = (halfHeight - domy) / halfHeight
+
+        // console.log(clickX,clickY)
+        points.push({
+          clickX, clickY
+        })
+
+        for (let i = 0; i < points.length; i++) {
+          gl.vertexAttrib2f(aPosition, points[i].clickX, points[i].clickY)
+
+          gl.uniform2f(uColor, points[i].clickX, points[i].clickY)
+          gl.drawArrays(gl.POINTS, 0, 1);
+        }
+      }
+    </script>
+  </body>
+</html>
