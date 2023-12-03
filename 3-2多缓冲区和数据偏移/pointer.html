@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>3-2多缓冲区和数据偏移</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      /*margin: 50px auto 0;*/
+      display: block;
+      background: yellow;
+    }
+
+    body::after {
+      content: "";
+      display: block;
+      width: 1px;
+      height: 400px;
+      background: red;
+      position: absolute;
+      top: 0;
+      left: 200px;
+    }
+
+    body::before {
+      content: "";
+      display: block;
+      width: 400px;
+      height: 1px;
+      background: black;
+      position: absolute;
+      top: 200px;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400"> 此浏览器不支持canvas</canvas>
+<script type="module">
+  import {initShader} from "../lib";
+
+  const ctx = document.getElementById('canvas')
+
+  const gl = ctx.getContext('webgl')
+
+  // 创建顶点着色器源码
+  const VERTEX_SHADER_SOURCE = `
+    attribute vec4 aPosition;            // 声明顶点位置属性
+    attribute float aPointSize;          // 声明顶点大小属性
+    void main() {
+      gl_Position = aPosition;           // 将顶点位置属性赋值给gl_Position输出变量
+      gl_PointSize = aPointSize;         // 将顶点大小属性赋值给gl_PointSize输出变量
+    }
+  `;
+
+  const FRAGMENT_SHADER_SOURCE = `
+    void main() {
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);   // 设置片段颜色为红色
+    }
+  `;
+
+  const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
+
+  const aPosition = gl.getAttribLocation(program, 'aPosition');   // 获取顶点位置属性位置
+  const aPointSize = gl.getAttribLocation(program, 'aPointSize'); // 获取顶点大小属性位置
+
+  const points = new Float32Array([
+    -0.5, -0.5, 10.0,   // 第一个点的顶点位置和大小
+    0.5, -0.5, 20.0,    // 第二个点的顶点位置和大小
+    0.0,  0.5, 30.0,    // 第三个点的顶点位置和大小
+  ]);
+
+  const buffer = gl.createBuffer();
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+  gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+  const BYTES = points.BYTES_PER_ELEMENT;
+
+  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, BYTES * 3, 0);   // 绑定顶点位置属性指针
+
+  gl.enableVertexAttribArray(aPosition);   // 启用顶点位置属性
+
+  gl.vertexAttribPointer(aPointSize, 1, gl.FLOAT, false, BYTES * 3, BYTES * 2); // 绑定顶点大小属性指针
+
+  gl.enableVertexAttribArray(aPointSize); // 启用顶点大小属性
+
+  gl.drawArrays(gl.POINTS, 0, 3);   // 绘制点
+
+
+</script>
+</body>
+</html>
