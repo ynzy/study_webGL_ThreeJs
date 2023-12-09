@@ -157,6 +157,11 @@ const indices = [
   2,1,0,0,3,2,1,3,0,2,3,1
 ]
 
+/**
+ * 创建几何体
+ * @param geometry
+ * @returns {*}
+ */
 function createMaterial(geometry) {
   const lambert = new THREE.MeshLambertMaterial({ color: 0xff0000 })
   const basic = new THREE.MeshBasicMaterial({ wireframe: true })
@@ -180,6 +185,10 @@ const textOptions = {
   steps: 1,
 }
 
+/**
+ * 需要转换成数字的属性枚举
+ * @type {{radialSegments: number, heightSegments: number, steps: number, bevelSegments: number, depthSegments: number, depth: number, size: number, width: number, curveSegments: number, detail: number, tubularSegments: number, widthSegments: number, height: number}}
+ */
 const roundValue = {
   width: 1,
   height: 1,
@@ -199,15 +208,25 @@ const roundValue = {
 const isPolyhedron = item => item.type === 'PolyhedronGeometry';
 const isFont = item => item.type === 'TextGeometry';
 
+/**
+ * 删除和添加几何体
+ * @param item
+ * @param value
+ * @param camera
+ * @param mesh
+ * @param scene
+ * @param controls
+ */
 function removeAndAdd(item, value, camera, mesh, scene, controls) {
 
   const {x, y, z} = mesh.pointer.rotation;
-
+  // 移除旧的几何体
   scene.remove(mesh.pointer);
   const arg = [];
 
   for (const key in controls) {
     if (roundValue[key]) {
+      // 强制转换成数字
       controls[key] = ~~controls[key];
     }
     arg.push(controls[key])
@@ -217,6 +236,7 @@ function removeAndAdd(item, value, camera, mesh, scene, controls) {
     arg.unshift(vertices, indices);
   }
 
+  // 文字几何体
   if (isFont(item)) {
     mesh.pointer = createMaterial(new THREE[item.type]('THREE', Object.assign(textOptions, controls)))
   } else {
@@ -224,6 +244,7 @@ function removeAndAdd(item, value, camera, mesh, scene, controls) {
   }
 
   mesh.pointer.rotation.set(x, y, z);
+  // 添加新的几何体
   scene.add(mesh.pointer);
 }
 
