@@ -8,7 +8,9 @@ import { color } from "@/config";
 export class SurroundLine {
   private scene: Scene;
   private child: THREE.Mesh;
-  constructor(scene: Scene, child: THREE.Mesh) {
+  height: { value: number };
+  constructor(scene: Scene, child: THREE.Mesh, height: { value: number }) {
+    this.height = height;
     this.scene = scene;
     this.child = child;
 
@@ -32,6 +34,12 @@ export class SurroundLine {
 
     const material = new THREE.ShaderMaterial({
       uniforms: {
+        // 当前扫描的高度
+        u_height: this.height,
+        // 扫描线条的颜色
+        u_up_color: {
+          value: new THREE.Color(color.risingColor),
+        },
         // 最底部显示的颜色
         u_city_color: {
           value: new THREE.Color(color.mesh),
@@ -56,9 +64,20 @@ export class SurroundLine {
         uniform vec3 u_city_color;
         uniform vec3 u_head_color;
         uniform float u_size;
+
+        uniform vec3 u_up_color;
+        uniform float u_height;
+
         void main() {
           vec3 base_color = u_city_color;
           base_color = mix(base_color, u_head_color, v_position.z / u_size);
+
+          // 上升线条的高度是多少
+          if(u_height > v_position.z && u_height < v_position.z + 6.0) {
+            float f_index = (u_height - v_position.z) / 3.0;
+            base_color = mix(u_up_color, base_color, abs(f_index - 1.0));
+          };
+
           gl_FragColor = vec4(base_color, 1.0);
         }
       `,

@@ -11,13 +11,16 @@ export class City {
   private scene: Scene;
   private tweenPosition: any;
   private tweenRotation: any;
+  height: { value: number };
 
   constructor(params: { scene: Scene; camera: PerspectiveCamera }) {
     this.scene = params.scene;
     this.camera = params.camera;
     this.tweenPosition = null;
     this.tweenRotation = null;
-
+    this.height = {
+      value: 5,
+    };
     this.loadCity();
   }
 
@@ -31,7 +34,7 @@ export class City {
     object.traverse((child) => {
       if ((child as Mesh).isMesh) {
         // 给物体添加一个着色器材质
-        new SurroundLine(this.scene, child as Mesh);
+        new SurroundLine(this.scene, child as Mesh, this.height);
       }
     });
     this.initEffect();
@@ -128,6 +131,11 @@ export class City {
     if (this.tweenPosition && this.tweenRotation) {
       this.tweenPosition.update();
       this.tweenRotation.update();
+    }
+    // 动态修改height值
+    this.height.value += 0.4;
+    if (this.height.value > 160) {
+      this.height.value = 5;
     }
   }
 }
