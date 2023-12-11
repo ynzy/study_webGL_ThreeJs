@@ -6,6 +6,7 @@ import { Background } from "@/effect/background";
 import * as TWEEN from "@tweenjs/tween.js";
 import type { Mesh } from "three";
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { Rader } from "@/effect/radar";
 
 export class City {
   private camera: PerspectiveCamera;
@@ -55,6 +56,7 @@ export class City {
   // 初始化效果
   initEffect() {
     new Background(this.scene);
+    new Rader(this.scene, this.time);
   }
 
   /**

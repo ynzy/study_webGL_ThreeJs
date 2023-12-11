@@ -2,6 +2,9 @@ import { loadImage } from "@/utils";
 import * as THREE from "three";
 import type { Scene } from "three";
 
+/**
+ * 背景天空盒
+ */
 export class Background {
   private url: string;
   private scene: Scene;
