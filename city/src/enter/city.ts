@@ -5,6 +5,7 @@ import { SurroundLine } from "@/effect/surroundLine";
 import { Background } from "@/effect/background";
 import * as TWEEN from "@tweenjs/tween.js";
 import type { Mesh } from "three";
+import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export class City {
   private camera: PerspectiveCamera;
@@ -12,14 +13,24 @@ export class City {
   private tweenPosition: any;
   private tweenRotation: any;
   height: { value: number };
+  time: { value: number };
+  controls: OrbitControls;
 
-  constructor(params: { scene: Scene; camera: PerspectiveCamera }) {
+  constructor(params: {
+    scene: Scene;
+    camera: PerspectiveCamera;
+    controls: OrbitControls;
+  }) {
     this.scene = params.scene;
     this.camera = params.camera;
+    this.controls = params.controls;
     this.tweenPosition = null;
     this.tweenRotation = null;
     this.height = {
       value: 5,
+    };
+    this.time = {
+      value: 0,
     };
     this.loadCity();
   }
@@ -34,7 +45,7 @@ export class City {
     object.traverse((child) => {
       if ((child as Mesh).isMesh) {
         // 给物体添加一个着色器材质
-        new SurroundLine(this.scene, child as Mesh, this.height);
+        new SurroundLine(this.scene, child as Mesh, this.height, this.time);
       }
     });
     this.initEffect();
@@ -127,11 +138,12 @@ export class City {
   }
 
   //   开始方法，所有更新逻辑在此开发
-  start() {
+  start(delta) {
     if (this.tweenPosition && this.tweenRotation) {
       this.tweenPosition.update();
       this.tweenRotation.update();
     }
+    this.time.value += delta;
     // 动态修改height值
     this.height.value += 0.4;
     if (this.height.value > 160) {

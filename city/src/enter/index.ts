@@ -29,18 +29,16 @@ export const initCity = () => {
   // 是否可以缩放
   orbitControls.enableZoom = true;
   // 最近和最远距离
-  orbitControls.minDistance = 500;
+  orbitControls.minDistance = 100;
   orbitControls.maxDistance = 2000;
 
   // 环境光
-  const ambientLight = new THREE.AmbientLight(0xadadad, 0.5);
+  const ambientLight = new THREE.AmbientLight(0xadadad);
   scene.add(ambientLight);
   // 添加平行光
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  const directionalLight = new THREE.DirectionalLight(0xffffff);
   directionalLight.position.set(0, 0, 0);
   scene.add(directionalLight);
-
-  const city = new City({ scene, camera });
 
   // 创建渲染器
   const renderer = new THREE.WebGLRenderer({
@@ -54,9 +52,12 @@ export const initCity = () => {
   //   设置渲染器颜色为黑色
   renderer.setClearColor(new THREE.Color(0x000000), 1);
 
+  const city = new City({ scene, camera, controls: orbitControls });
+
+  const clock = new THREE.Clock();
   // 动画渲染场景
   const start = () => {
-    city.start();
+    city.start(clock.getDelta());
     orbitControls.update();
     // 渲染场景
     renderer.render(scene, camera);

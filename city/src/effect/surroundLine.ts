@@ -9,11 +9,17 @@ export class SurroundLine {
   private scene: Scene;
   private child: THREE.Mesh;
   height: { value: number };
-  constructor(scene: Scene, child: THREE.Mesh, height: { value: number }) {
+  time: { value: number };
+  constructor(
+    scene: Scene,
+    child: THREE.Mesh,
+    height: { value: number },
+    time: { value: number }
+  ) {
     this.height = height;
     this.scene = scene;
     this.child = child;
-
+    this.time = time;
     this.createMesh();
     // 创建外围线条
     this.createLine();
@@ -96,22 +102,72 @@ export class SurroundLine {
     // const material = new THREE.LineBasicMaterial({
     //   color: color.soundLine,
     // });
+
+    const { max, min } = this.child.geometry.boundingBox as THREE.Box3;
+
     // 自定义线条渲染
     const material = new THREE.ShaderMaterial({
       uniforms: {
         line_color: {
           value: new THREE.Color(color.soundLine),
         },
+        // 一个不断变化的值u_time
+        u_time: this.time,
+        // 扫描的位置
+        u_max: {
+          value: max,
+        },
+        u_min: {
+          value: min,
+        },
+        // 扫光的颜色
+        live_color: {
+          value: new THREE.Color(color.liveColor),
+        },
       },
       vertexShader: `
+        uniform float u_time;
+        uniform vec3 live_color;
+        uniform vec3 line_color;
+        uniform vec3 u_max;
+        uniform vec3 u_min;
+        
+        varying vec3 v_color;
+        
         void main() {
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          float uMax = 4.0;
+          
+          float rate = u_time / uMax * 2.0;
+          
+          if (rate > 1.0) {
+            rate = 1.0;
+          }
+          
+          float z = position.z * rate;
+        
+          float new_time = mod(u_time * 0.1, 1.0);
+          // 扫描的位置
+          float rangeY = mix(u_min.y, u_max.y, new_time);
+          
+          // 当前在这个区间内，显示扫描光带
+          if (rangeY < position.y && rangeY > position.y - 200.0) {
+            float f_index = 1.0 - sin((position.y - rangeY) / 200.0 * 3.14);
+            float r = mix(live_color.r, line_color.r, f_index);
+            float g = mix(live_color.g, line_color.g, f_index);
+            float b = mix(live_color.b, line_color.b, f_index);
+            
+            v_color = vec3(r,g,b);
+          } else {
+            v_color = line_color;
+          }
+          
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(vec2(position), z, 1.0);
         }
       `,
       fragmentShader: `
-        uniform vec3 line_color;
+        varying vec3 v_color;
         void main() {
-          gl_FragColor = vec4(line_color, 1.0);
+          gl_FragColor = vec4(v_color, 1.0);
         }
       `,
     });

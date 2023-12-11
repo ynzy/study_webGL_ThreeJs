@@ -12,16 +12,31 @@ export class Background {
   }
   // 创建天空盒
   init() {
-    //  创建一个纹理加载器
-    const textureLoader = new THREE.TextureLoader();
-    //     创建一个 球体
+    this.cubeBackground();
+  }
+  cubeBackground() {
+    const textureCube = new THREE.CubeTextureLoader().load([
+      loadImage("@/assets/background/1.jpg"),
+      loadImage("@/assets/background/2.jpg"),
+      loadImage("@/assets/background/3.jpg"),
+      loadImage("@/assets/background/4.jpg"),
+      loadImage("@/assets/background/5.jpg"),
+      loadImage("@/assets/background/6.jpg"),
+    ]);
+    this.scene.background = textureCube; // 作为背景贴图
+  }
+  sphereBackground() {
+    // 创建一个纹理加载器
+    const loader = new THREE.TextureLoader();
+
     const geometry = new THREE.SphereGeometry(5000, 32, 32);
-    //     创建基础材质
     const material = new THREE.MeshBasicMaterial({
-      map: textureLoader.load(this.url),
       side: THREE.DoubleSide,
+      map: loader.load(this.url),
     });
+
     const sphere = new THREE.Mesh(geometry, material);
+
     sphere.position.copy({
       x: 0,
       y: 0,
