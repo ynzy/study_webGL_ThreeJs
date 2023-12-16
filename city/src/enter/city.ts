@@ -7,6 +7,12 @@ import * as TWEEN from "@tweenjs/tween.js";
 import type { Mesh } from "three";
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Rader } from "@/effect/radar";
+import { Wall } from "@/effect/wall";
+import { Circle } from "@/effect/circle";
+import { Ball } from "@/effect/ball";
+import { Cone } from "@/effect/cone";
+import { Fly } from "@/effect/fly";
+import { Road } from "@/effect/road";
 
 export class City {
   private camera: PerspectiveCamera;
@@ -16,6 +22,8 @@ export class City {
   height: { value: number };
   time: { value: number };
   controls: OrbitControls;
+  top: { value: number };
+  flag: boolean;
 
   constructor(params: {
     scene: Scene;
@@ -31,6 +39,10 @@ export class City {
       value: 5,
     };
     this.time = {
+      value: 0,
+    };
+    this.flag = false;
+    this.top = {
       value: 0,
     };
     this.loadCity();
@@ -55,8 +67,22 @@ export class City {
 
   // 初始化效果
   initEffect() {
+    // 天空盒
     new Background(this.scene);
+    // 雷达效果
     new Rader(this.scene, this.time);
+    // 扩散墙
+    new Wall(this.scene, this.time);
+    // 扩散圆
+    new Circle(this.scene, this.time);
+    // 扩散半球
+    new Ball(this.scene, this.time);
+    // 旋转四棱锥
+    new Cone(this.scene, this.time, this.top, this.height);
+    // 飞线
+    new Fly(this.scene, this.time);
+    // 路径移动
+    new Road(this.scene, this.time);
   }
 
   /**
@@ -146,10 +172,15 @@ export class City {
       this.tweenRotation.update();
     }
     this.time.value += delta;
+
     // 动态修改height值
     this.height.value += 0.4;
     if (this.height.value > 160) {
       this.height.value = 5;
     }
+    if (this.top.value > 15 || this.top.value < 0) {
+      this.flag = !this.flag;
+    }
+    this.top.value += this.flag ? -0.8 : 0.8;
   }
 }
