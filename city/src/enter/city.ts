@@ -68,6 +68,53 @@ export class City {
     });
     this.initEffect();
     this.addClick();
+    this.addWheel();
+  }
+  // 让场景跟随鼠标的坐标进行缩放
+  addWheel() {
+    // 解决鼠标滚轮缩放问题
+    this.controls.enableZoom = false;
+    // 开启右键拖动，解决我们场景移出视角的问题
+    this.controls.enablePan = true;
+    const body = document.body;
+    body.onmousewheel = (event) => {
+      // 缩放系数
+      const scale = 30;
+      // // 阻止默认事件
+      // event.preventDefault();
+      // // 阻止浏览器的滚动条滚动
+      // event.stopPropagation();
+      // // 阻止浏览器的滚动条滚动
+      // event.returnValue = false;
+      // // 阻止浏览器的滚动条滚动
+      // event.cancelBubble = true;
+      // // 阻止浏览器的滚动条滚动
+      // event.returnValue = false;
+      // 获取到鼠标当前的坐标信息
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = -(event.clientY / window.innerHeight) * 2 + 1;
+      const vector = new THREE.Vector3(x, y, 0.5);
+      // 得到缩放的坐标信息
+      vector.unproject(this.camera);
+      vector.sub(this.camera.position).normalize();
+      if (event.wheelDelta > 0) {
+        this.camera.position.x += vector.x * scale;
+        this.camera.position.y += vector.y * scale;
+        this.camera.position.z += vector.z * scale;
+
+        this.controls.target.x += vector.x * scale;
+        this.controls.target.y += vector.y * scale;
+        this.controls.target.z += vector.z * scale;
+      } else {
+        this.camera.position.x -= vector.x * scale;
+        this.camera.position.y -= vector.y * scale;
+        this.camera.position.z -= vector.z * scale;
+
+        this.controls.target.x -= vector.x * scale;
+        this.controls.target.y -= vector.y * scale;
+        this.controls.target.z -= vector.z * scale;
+      }
+    };
   }
 
   // 初始化效果
@@ -91,7 +138,7 @@ export class City {
     // 显示文字
     new Font(this.scene);
     // 下雪
-    this.effect.snow = new Snow(this.scene);
+    // this.effect.snow = new Snow(this.scene);
     // 下雨
     // this.effect.rain = new Rain(this.scene);
   }
