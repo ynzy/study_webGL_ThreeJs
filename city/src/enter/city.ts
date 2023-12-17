@@ -91,9 +91,9 @@ export class City {
     // 显示文字
     new Font(this.scene);
     // 下雪
-    // this.effect.snow = new Snow(this.scene);
+    this.effect.snow = new Snow(this.scene);
     // 下雨
-    this.effect.rain = new Rain(this.scene);
+    // this.effect.rain = new Rain(this.scene);
   }
 
   /**
