@@ -1,14 +1,14 @@
 import { loadImage } from "@/utils";
 import * as THREE from "three";
 
-export class Snow {
+export class Rain {
   scene: THREE.Scene;
   range: number;
   count: number;
   geometry: THREE.BufferGeometry<THREE.NormalBufferAttributes> | undefined;
   material: THREE.PointsMaterial | undefined;
   pointList: any[];
-  point:
+  points:
     | THREE.Points<
         THREE.BufferGeometry<THREE.NormalBufferAttributes>,
         THREE.PointsMaterial
@@ -17,25 +17,25 @@ export class Snow {
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
-    // 雪花范围
+    // 雨范围
     this.range = 1000;
-    // 雪花的个数
+    // 个数
     this.count = 600;
     this.pointList = [];
     this.init();
   }
   init() {
-    // 使用粒子和粒子系统实现雪花效果
+    // 使用粒子和粒子系统实现
     this.material = new THREE.PointsMaterial({
       size: 30,
-      map: new THREE.TextureLoader().load(loadImage("@/assets/snow.png")),
+      map: new THREE.TextureLoader().load(loadImage("@/assets/rain.png")),
       transparent: true,
       opacity: 0.8,
       // 消除图片的黑色背景
       depthTest: false,
     });
     this.geometry = new THREE.BufferGeometry();
-    const points = [];
+
     for (let i = 0; i < this.count; i++) {
       // 这样随机坐标有正负数
       const x = Math.random() * this.range - this.range / 2;
@@ -43,30 +43,26 @@ export class Snow {
       const z = Math.random() * this.range - this.range / 2;
       const position = new THREE.Vector3(x, y, z);
       // 每个粒子创建一个移动速度
-      position.speedX = Math.random() - 0.5;
-      position.speedY = Math.random() + 0.5; // 下落速度最低为0.4，这里不考虑其他因素影响向上运动
-      position.speedZ = Math.random() - 0.5;
+      position.speedY = 10; // 下落速度最低为0.4，这里不考虑其他因素影响向上运动
       this.pointList.push(position);
     }
     this.geometry.setFromPoints(this.pointList);
-    this.point = new THREE.Points(this.geometry, this.material);
-    this.scene.add(this.point);
+    this.points = new THREE.Points(this.geometry, this.material);
+    this.scene.add(this.points);
   }
   animation() {
     this.pointList.forEach((position) => {
-      position.x -= position.speedX;
       position.y -= position.speedY;
-      position.z -= position.speedZ;
 
       // 设定阈值，雪花落到地上，就回到原来位置
       if (position.y <= 0) {
         position.y = this.range / 2;
       }
 
-      this.point.geometry.setFromPoints(this.pointList);
+      this.points.geometry.setFromPoints(this.pointList);
     });
   }
   destroy() {
-    this.scene.remove(this.point);
+    this.scene.remove(this.points);
   }
 }
