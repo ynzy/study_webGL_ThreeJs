@@ -16,6 +16,7 @@ import { Road } from "@/effect/road";
 import { Font } from "@/effect/font";
 import { Snow } from "@/effect/snow";
 import { Rain } from "@/effect/rain";
+import { Smoke } from "@/effect/smoke";
 
 export class City {
   private camera: PerspectiveCamera;
@@ -141,6 +142,8 @@ export class City {
     // this.effect.snow = new Snow(this.scene);
     // 下雨
     // this.effect.rain = new Rain(this.scene);
+    // 烟雾预警
+    this.effect.smoke = new Smoke(this.scene);
   }
 
   /**

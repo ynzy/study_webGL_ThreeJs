@@ -57,36 +57,54 @@ export class SurroundLine {
         u_size: {
           value: size,
         },
+        u_time: this.time,
       },
       vertexShader: `
-        varying vec3 v_position;
-        void main() {
-          v_position = position;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      uniform float u_time;
+      varying vec3 v_position;
+      
+      void main() {
+        // 变化的时间 
+        float uMax = 4.0;
+      
+        v_position = position;
+        
+        // 变化的比例
+        float rate = u_time / uMax * 2.0;
+        
+        // 边界条件
+        if (rate > 1.0) {
+          rate = 1.0;
         }
-      `,
+        
+        float z = position.z * rate;
+      
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(vec2(position), z, 1.0);
+      }
+    `,
       fragmentShader: `
-        varying vec3 v_position;
-        uniform vec3 u_city_color;
-        uniform vec3 u_head_color;
-        uniform float u_size;
-
-        uniform vec3 u_up_color;
-        uniform float u_height;
-
-        void main() {
-          vec3 base_color = u_city_color;
-          base_color = mix(base_color, u_head_color, v_position.z / u_size);
-
-          // 上升线条的高度是多少
-          if(u_height > v_position.z && u_height < v_position.z + 6.0) {
-            float f_index = (u_height - v_position.z) / 3.0;
-            base_color = mix(u_up_color, base_color, abs(f_index - 1.0));
-          };
-
-          gl_FragColor = vec4(base_color, 1.0);
+      varying vec3 v_position;
+      
+      uniform vec3 u_city_color;
+      uniform vec3 u_head_color;
+      uniform float u_size;
+      
+      uniform vec3 u_up_color;
+      uniform float u_height;
+      
+      void main() {
+        vec3 base_color = u_city_color;
+        base_color = mix(base_color, u_head_color, v_position.z / u_size);
+      
+        // 上升线条的高度是多少
+        if (u_height > v_position.z && u_height < v_position.z + 6.0) {
+          float f_index = (u_height - v_position.z) / 3.0;
+          base_color = mix(u_up_color, base_color, abs(f_index - 1.0));
         }
-      `,
+      
+        gl_FragColor = vec4(base_color, 1.0);
+      }
+    `,
     });
     const mesh = new THREE.Mesh(this.child.geometry, material);
     // 让mesh 继承child 的旋转、缩放、平移
