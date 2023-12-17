@@ -13,6 +13,8 @@ import { Ball } from "@/effect/ball";
 import { Cone } from "@/effect/cone";
 import { Fly } from "@/effect/fly";
 import { Road } from "@/effect/road";
+import { Font } from "@/effect/font";
+import { Snow } from "@/effect/snow";
 
 export class City {
   private camera: PerspectiveCamera;
@@ -24,6 +26,7 @@ export class City {
   controls: OrbitControls;
   top: { value: number };
   flag: boolean;
+  effect: any;
 
   constructor(params: {
     scene: Scene;
@@ -46,6 +49,7 @@ export class City {
       value: 0,
     };
     this.loadCity();
+    this.effect = {};
   }
 
   async loadCity() {
@@ -83,6 +87,10 @@ export class City {
     new Fly(this.scene, this.time);
     // 路径移动
     new Road(this.scene, this.time);
+    // 显示文字
+    new Font(this.scene);
+    // 下雪
+    this.effect.snow = new Snow(this.scene);
   }
 
   /**
@@ -167,6 +175,10 @@ export class City {
 
   //   开始方法，所有更新逻辑在此开发
   start(delta) {
+    for (let key in this.effect) {
+      this.effect[key] && this.effect[key].animation(delta);
+    }
+
     if (this.tweenPosition && this.tweenRotation) {
       this.tweenPosition.update();
       this.tweenRotation.update();
